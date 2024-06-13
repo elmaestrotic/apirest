@@ -1,5 +1,7 @@
 package com.narvasoft.apirest.controllers;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import com.narvasoft.apirest.models.Asistencia;
 import com.narvasoft.apirest.models.Students;
 import com.narvasoft.apirest.service.AsistenciaService;
@@ -52,6 +54,18 @@ public class StudentsController {
         return ResponseEntity.ok(student.get());
     }
 
+
+
+
+
+
+    // ...
+    @GetMapping("/section/{section}")
+    public ResponseEntity<?> getStudentsBySection(@PathVariable(value = "section") String section) {
+        Iterable<Students> students = studentsService.findBySection(section, Sort.by("name"));
+        return ResponseEntity.ok(students);
+    }
+
     // Get a student's attendance
     @GetMapping("/{id}/attendance")
     public ResponseEntity<?> getStudentAttendance(@PathVariable(value = "id") Long id) {
@@ -60,7 +74,8 @@ public class StudentsController {
             return ResponseEntity.notFound().build();
         }
         Students student = oStudent.get();
-        Iterable<Asistencia> attendanceRecords = asistenciaService.findByStudentId(student);
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("date").descending());
+        Iterable<Asistencia> attendanceRecords = asistenciaService.findByStudentId(student, pageable);
         return ResponseEntity.ok(attendanceRecords);
     }
 

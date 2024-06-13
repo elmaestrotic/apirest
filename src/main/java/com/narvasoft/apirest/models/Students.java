@@ -28,6 +28,6 @@ public class Students {
     //private Date registrationDate;
     private String photoUrl;  // Campo para la URL de la foto
     //private int totalLateArrivals;  // Este campo mantiene el total de llegadas tarde
-
+    private String section;
     // Getters y Setters
 }

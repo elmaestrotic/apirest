@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +41,10 @@ public class AsistenciaController {
             Students student = studentsService.findById(asistenciaData.getStudentId())
                     .orElseThrow(() -> new RuntimeException("Student not found"));
             asistencia.setStudent(student);
-            asistencia.setAttendanceDate(String.valueOf(asistenciaData.getAttendanceDate()));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            asistencia.setAttendanceDate(LocalDate.parse((CharSequence) asistenciaData.getAttendanceDate(), formatter));
+
             asistencia.setAttended(asistenciaData.isAttended());
             asistencia.setArrivedLate(asistenciaData.isArrivedLate());
             asistencia.setDescription(asistenciaData.getDescription());
@@ -141,5 +146,16 @@ public class AsistenciaController {
             return asistencia;
         }
     }
+
+    @GetMapping("/ultimo/{studentId}")//obtiene el último reg de asistencia del student con  ese ID
+    public ResponseEntity<?> readLast(@PathVariable(value = "studentId") Long studentId) {
+        Asistencia lastAsistencia = asistenciaService.findLastByStudentId(studentId);
+        if (lastAsistencia == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(lastAsistencia);
+    }
+
+
 }
 

@@ -12,10 +12,17 @@ public interface AsistenciaService {
     Iterable<Asistencia> findAll();
     Page<Asistencia> findAll(Pageable pageable);
     Optional<Asistencia> findById(Long id);
+
+    Iterable<Asistencia> findByStudentId(Students student, Pageable pageable);
+
     Asistencia save(Asistencia usuarios);
     @Transactional
     Asistencia save(Asistencia asistencia, Long studentId);
     void deleteById(Long id);
-    Iterable<Asistencia> findByStudentId(Students student);
+    Iterable<Asistencia> findByStudentId(Long id);
+
+    Page<Asistencia> findByStudentId(Long id, Pageable pageable);
+
+    Asistencia findLastByStudentId(Long id);
 }
 

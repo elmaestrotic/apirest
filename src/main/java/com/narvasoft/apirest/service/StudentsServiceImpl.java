@@ -2,6 +2,8 @@ package com.narvasoft.apirest.service;
 
 import com.narvasoft.apirest.models.Students;
 import com.narvasoft.apirest.repository.StudentsRepository;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,18 @@ public class StudentsServiceImpl implements StudentsService {
     public Iterable<Students> findAll() {
         return studentsRepository.findAll();
     }
+
+    @Override
+    public Iterable<Students> findBySection(String section, Sort sort) {
+        return studentsRepository.findBySection(section, sort);
+    }
+
+   /* @Override
+    @Transactional(readOnly = true)
+    public Iterable<Students> findBySection(String section) {
+        return studentsRepository.findBySection(section, sort);
+    }*/
+
 
     @Override
     public Page<Students> findAll(Pageable pageable) {
