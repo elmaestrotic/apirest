@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -27,37 +28,40 @@ public class AsistenciaController {
     @Autowired
     private StudentsService studentsService;
 
-    @PostMapping
-    public ResponseEntity<?> createAsistencia(@RequestBody AsistenciaData asistenciaData) {
-        try {
-            if (asistenciaData.getAttendanceDate() == null) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Error creating attendance", "Attendance date is required"));
-            }
-            if (asistenciaData.getStudentId() == null) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Error creating attendance", "Student ID is required"));
-            }
-
-            Asistencia asistencia = new Asistencia();
-            Students student = studentsService.findById(asistenciaData.getStudentId())
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
-            asistencia.setStudent(student);
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            asistencia.setAttendanceDate(LocalDate.parse((CharSequence) asistenciaData.getAttendanceDate(), formatter));
-
-            asistencia.setAttended(asistenciaData.isAttended());
-            asistencia.setArrivedLate(asistenciaData.isArrivedLate());
-            asistencia.setDescription(asistenciaData.getDescription());
-            asistencia.setAsignatura(asistenciaData.getAsignatura());
-
-            Asistencia savedAsistencia = asistenciaService.save(asistencia);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(new AsistenciaResponse(savedAsistencia.getId(), savedAsistencia));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Error creating attendance", e.getMessage()));
+@PostMapping
+public ResponseEntity<?> createAsistencia(@RequestBody AsistenciaData asistenciaData) {
+    try {
+        if (asistenciaData.getAttendanceDate() == null) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error creating attendance", "Attendance date is required"));
         }
+        if (asistenciaData.getStudentId() == null) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error creating attendance", "Student ID is required"));
+        }
+
+        Asistencia asistencia = new Asistencia();
+        Students student = studentsService.findById(asistenciaData.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        asistencia.setStudent(student);
+
+        // Convert the Date to LocalDate
+        LocalDate attendanceDate = asistenciaData.getAttendanceDate().toInstant()
+          .atZone(ZoneId.systemDefault())
+          .toLocalDate();
+        asistencia.setAttendanceDate(attendanceDate);
+
+        asistencia.setAttended(asistenciaData.isAttended());
+        asistencia.setArrivedLate(asistenciaData.isArrivedLate());
+        asistencia.setDescription(asistenciaData.getDescription());
+        asistencia.setAsignatura(asistenciaData.getAsignatura());
+
+        Asistencia savedAsistencia = asistenciaService.save(asistencia);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AsistenciaResponse(savedAsistencia.getId(), savedAsistencia));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Error creating attendance", e.getMessage()));
     }
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<?> readOne(@PathVariable(value = "id") Long id) {
